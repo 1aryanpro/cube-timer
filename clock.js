@@ -1,10 +1,11 @@
 let EventEmitter = require('events');
 class Clock extends EventEmitter {
-  constructor() {
+  constructor(refreshRate = 10) {
     super();
     this.running = false;
     this.intervalID = 0;
     this.ms = 0;
+    this.refreshRate = refreshRate;
   }
 
   start(makeEvent = true) {
@@ -14,13 +15,14 @@ class Clock extends EventEmitter {
       let delta = now - this.pms;
       this.tick(delta);
       this.pms = now;
-      this.emit('tick');
-    }, 100);
+      this.emit('tick', this.ms);
+    }, this.refreshRate);
     this.running = true;
     if (makeEvent) this.emit('start');
   }
 
   stop(makeEvent = true) {
+    if (!this.running) return;
     clearInterval(this.intervalID);
     this.running = false;
     if (makeEvent) this.emit('stop');
@@ -28,18 +30,25 @@ class Clock extends EventEmitter {
 }
 
 class Stopwatch extends Clock {
-  constructor() {
-    super();
+  constructor(refreshRate) {
+    super(refreshRate);
   }
+
   tick(delta) {
     this.ms += delta;
+  }
+
+  reset() {
+    this.ms = 0;
+    this.emit('reset');
   }
 }
 
 class Timer extends Clock {
-  constructor(ms) {
-    super();
-    this.ms = ms;
+  constructor(len, refreshRate) {
+    super(refreshRate);
+    this.ms = len;
+    this.len = len;
     this.finished = false;
   }
 
@@ -47,10 +56,18 @@ class Timer extends Clock {
     if (this.finished) return;
     this.ms -= delta;
     if (this.ms <= 0) {
+      this.ms = 0;
       this.finished = true;
       this.stop(false);
       this.emit('done');
     }
+  }
+
+  reset() {
+    this.ms = this.len;
+    this.finished = false;
+    this.stop();
+    this.emit('reset');
   }
 }
 
