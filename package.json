@@ -17,6 +17,11 @@
   },
   "homepage": "https://github.com/SmashMineGame/cube-timer#readme",
   "dependencies": {
+    "cli-color": "^2.0.3",
     "scrambow": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/charm": "^1.0.3",
+    "@types/cli-color": "^2.0.2"
   }
 }
